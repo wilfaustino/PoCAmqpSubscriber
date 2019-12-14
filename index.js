@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const amqp = require('amqplib')
 
-const RABBIT_DEFAULT_URL = 'amqp://127.0.0.1'
+const RABBIT_DEFAULT_URL = 'amqp://192.168.0.8'
 const DEFAULT_PORT = 5000
 
 app.get('/health', function (_, res) {
