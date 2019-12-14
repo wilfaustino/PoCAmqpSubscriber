@@ -2,7 +2,18 @@ const express = require('express')
 const app = express()
 const amqp = require('amqplib')
 
-const RABBIT_DEFAULT_URL = 'amqp://192.168.0.8'
+const hostname = '192.168.0.8'
+const port = 5672
+let rabbitAddress = { hostname, port }
+
+if (process.env.RABBIT_PORT) {
+    rabbitAddress = {...rabbitAddress, port: process.env.RABBIT_PORT }
+}
+
+if (process.env.RABBIT_HOST) {
+    rabbitAddress = {...rabbitAddress, hostname: process.env.RABBIT_HOST }
+}
+
 const DEFAULT_PORT = 5000
 
 app.get('/health', function (_, res) {
@@ -12,7 +23,7 @@ app.get('/health', function (_, res) {
 app.get('/:queue/', function (req, res) {
     const { queue } = req.params
 
-    const open = amqp.connect(process.env.RABBIT_URL || RABBIT_DEFAULT_URL)
+    const open = amqp.connect(rabbitAddress)
     open.then(conn => {
         return conn.createChannel()
     })
@@ -26,6 +37,9 @@ app.get('/:queue/', function (req, res) {
                     }
                     res.status(200).send('empty')
                 })
+            })
+            .then(() => {
+                return ch.close()
             })
     })
     .catch(err => {
